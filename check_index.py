@@ -14,7 +14,10 @@ if __name__ == "__main__":
             while True:
                 i_line += 1
                 print(f"Testing line {i_line}")
-                hash, filepath, charnumber = f_index.readline().split(',')
+                line = f_index.readline()
+                if line == "":
+                    break
+                hash, filepath, charnumber = line.split(',')
                 charnumber = int(charnumber.rstrip())
                 filepath = path.join(*[find_var(vars, int(v))
                                        for v in filepath.split("/")])
