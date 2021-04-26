@@ -1,5 +1,6 @@
 import ipdb
 import os
+import sys
 import json
 import traceback
 from flask import request, Flask, Response
@@ -11,13 +12,14 @@ cors = CORS(app)
 app.config['CORS_HEADERS'] = 'Content-Type'
 vars = []
 tree = None
+index_filepath = None
 
 
 @app.route('/query')
 @cross_origin()
 def query():
     global tree
-    f_index_sorted = open("index_sorted")
+    f_index_sorted = open(index_filepath)
     f_index_sorted.seek(0, os.SEEK_END)
     size = f_index_sorted.tell()
     # print("Searching...")
@@ -48,7 +50,7 @@ def queries():
     jsons = []
     keys = request.args.get('keys').split(",")
     for key in keys:
-        file, charstart = search(key, 'index_sorted')
+        file, charstart = search(key, index_filepath)
         head_idx, tail_idx = file.split("/")
         head = find_var(vars, int(head_idx))
         tail = find_var(vars, int(tail_idx))
@@ -69,7 +71,7 @@ def queries():
 def get_paper():
     try:
         id = request.args.get('id')
-        paper = search(id, "index_sorted", vars)
+        paper = search(id, index_filepath, vars)
         return Response(json.dumps(paper), status=200, mimetype='application/json')
     except Exception as e:
         return Response(json.dumps({"error": traceback.print_exc()}), status=200, mimetype='application/json')
@@ -98,6 +100,7 @@ def snowball_route():
 
 
 if __name__ == "__main__":
-    tree = Node()
-    vars = read_vars("./vars")
-    app.run(debug=True)
+    index_filepath = sys.argv[1]
+    vars_filepath = sys.argv[2]
+    vars = read_vars(vars_filepath)
+    app.run(debug=True, port=5001)
