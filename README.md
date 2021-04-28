@@ -16,6 +16,13 @@ Download corpus (updated instructions [here](http://s2-public-api-prod.us-west-2
 $ wget https://s3-us-west-2.amazonaws.com/ai2-s2-research-public/open-corpus/2021-04-01/manifest.txt
 $ wget -B https://s3-us-west-2.amazonaws.com/ai2-s2-research-public/open-corpus/2021-04-01/ -i manifest.txt
 ```
+
+Decompress:
+
+```sh
+$ gunzip s2-corpus-*.gz
+```
+
 Create an index per file:
 ```sh
 $ python3 make_index.py vars index 4 /path/to/corpus/jsons/*
