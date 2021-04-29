@@ -13,7 +13,6 @@ if __name__ == "__main__":
         try:
             while True:
                 i_line += 1
-                print(f"Testing line {i_line}")
                 line = f_index.readline()
                 if line == "":
                     break
@@ -23,10 +22,9 @@ if __name__ == "__main__":
                                        for v in filepath.split("/")])
                 with open(filepath, 'r') as f:
                     f.seek(charnumber)
-                    print(hash)
                     hash_ = json.loads(f.readline())["id"]
-                    print(hash_)
                     assert(hash == hash_)
         except Exception as e:
+            print("ERROR")
             print(e)
             ipdb.set_trace()
