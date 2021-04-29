@@ -96,7 +96,11 @@ def snowball_route():
         max_papers = int(request.args.get('maxPapers'))
     except:
         max_papers = 200
-    return Response(json.dumps(snowball(keys, include, min_year, max_papers)), status=200, mimetype='application/json')
+    snowball_result = snowball(
+        vars_filepath, index_filepath, keys, include, min_year, max_papers)
+    return Response(json.dumps(snowball_result),
+                    status=200,
+                    mimetype='application/json')
 
 
 if __name__ == "__main__":
