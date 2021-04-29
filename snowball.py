@@ -163,25 +163,20 @@ def fetch_paper_from_fs(filename, charstart, vars):
         try:
             json_ = json.loads(str_)
         except:
-            # ipdb.set_trace()
+            ipdb.set_trace()
             print(f"Could not fech paper from {file}. Incorrect JSON")
             return None
         return json_
 
 
-def snowball(hashes, words_to_include, min_year, max_papers=None):
+def snowball(vars_filepath, index_filepath, hashes, words_to_include, min_year, max_papers=None):
     ps = PorterStemmer()
-    # tree = Node()
-    vars = read_vars("./vars")
-    # keys = request.args.get('keys').split(",")
+    vars = read_vars(vars_filepath)
 
     words_to_include = [ps.stem(word) for word in words_to_include]
-    # papers = snowball_search("index_fixed", hashes, tree, vars)
-    # papers = [search(hash, "index_fixed", read_vars("vars"))
-    #           for hash in hashes]
     papers = []
     for h in hashes:
-        paper = search(h, "index_sorted", vars)
+        paper = search(h, index_filepath, vars)
         if paper is not None:
             papers.append(paper)
         else:
@@ -189,39 +184,34 @@ def snowball(hashes, words_to_include, min_year, max_papers=None):
     papersIn = {}
     for hash in hashes:
         papersIn[hash] = True
-    # print(papers)
     stack = [p for p in papers]
     final_papers = []
     while stack:
-        print("hello")
         paper = stack.pop(0)
         hashes = paper["inCitations"] + paper["outCitations"]
-        papers = []
-        for h in hashes:
+        print((f"Stack {len(stack)}"
+               f" | Final {len(final_papers)}"
+               f" | Paper = {paper['id']}"
+               f" | Citations = {len(hashes)}"))
+        for i, h in enumerate(hashes):
             if h not in papersIn:
-                paper = search(h, "index_sorted", vars)
-                if paper is not None:
-                    papers.append(paper)
-                else:
-                    print(f"Failed to find {h}")
-        for p in papers:
-            papersIn[p["id"]] = True
-        try:
-            papers = [p for p in papers if all([word in p["title"].lower(
-            ) or word in p["paperAbstract"].lower() for word in words_to_include]) and (p['year'] is None or p['year'] > min_year)]
-        except Exception as e:
-            ipdb.set_trace()
-        stack.extend(papers)
-        final_papers.extend(papers)
-        print((f"Stack {len(stack) - len(papers)} + {len(papers)}"
-               f" | Final {len(final_papers)}"))
-        if max_papers != None and len(final_papers) > max_papers:
-            break
-    return final_papers[:max_papers]
+                paper = search(h, index_filepath, vars)
+                if (paper is not None and
+                        all([word in paper["title"].lower() or
+                             word in paper["paperAbstract"].lower() for word in words_to_include]) and
+                        (paper['year'] is None or paper['year'] > min_year)):
+                    stack.append(paper)
+                    final_papers.append(paper)
+                    papersIn[paper["id"]] = True
+                    if (not (max_papers is None) and len(final_papers) >= max_papers):
+                        return final_papers
+    return []
 
 
 if __name__ == "__main__":
-    papers = snowball(["3898ac5cde941c4ccace3f63e84c6f4960ff3ad4"],
+    papers = snowball("vars",
+                      "index",
+                      ["3898ac5cde941c4ccace3f63e84c6f4960ff3ad4"],
                       ["surface", "bacteria", "antibacterial"],
-                      2010, 20)
+                      2010, 1000)
     print(papers)
